@@ -7,14 +7,13 @@ import time
 from datetime import date
 import urllib2
 import os
-import ConfigParser
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from settings_loader import load_settings
 
-settings_file = os.path.expanduser("~/settings.conf")
 lock_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "TDay.lock")
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "TDay.log")
 
-Config = ConfigParser.ConfigParser()
-Config.read(settings_file)
+Config = load_settings()
 
 
 #This is to check if there is already a lock file existing#

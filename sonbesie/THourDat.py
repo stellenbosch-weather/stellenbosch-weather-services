@@ -3,10 +3,10 @@ import sys
 import time
 from pprint import pprint
 import os
-import ConfigParser
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from settings_loader import load_settings
 
-Config = ConfigParser.ConfigParser()
-Config.read(os.path.expanduser("~/settings.conf"))
+Config = load_settings()
 
 stationName = "Sonbesie"
 tableName = "SB_THour"
