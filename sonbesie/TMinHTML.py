@@ -35,18 +35,14 @@ if os.access(lock_file, os.F_OK):
   # Now we check the PID from lock file matches to the current
   # process PID
   if oldpid.strip() != "" and os.path.exists("/proc/%s" % oldpid):
-    progress("You already have an instance of the program running")
-    progress("It is running as process %s," % oldpid)
+    progress("Already running as PID=%s" % oldpid.strip())
     sys.exit(1)
   else:
-    progress("File is there but the program is not running")
-    progress("Removing lock file for the: %s as it can be there because of the program last time it was run" % oldpid)
     os.remove(lock_file)
 
 #This is part of code where we put a PID file in the lock file
 pidfile = open(lock_file, "w")
 newpid = str(os.getpid())
-progress("PID="+newpid)
 pidfile.write(newpid)
 pidfile.close()
 
