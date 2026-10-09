@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import sys
 import time
 from pprint import pprint
 from datetime import date
-import urllib.request as urllib2
+try:
+    import urllib.request as urllib2
+except ImportError:  # Python 2.7 on the production collector
+    import urllib2
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from settings_loader import load_settings
@@ -48,10 +51,13 @@ log = open(log_file, 'a')
 log.write( "Run start: "+time.strftime("%Y-%m-%d", time.localtime(time.time()))+" "+time.strftime("%H:%M:%S", time.localtime(time.time()))+"\n" )
 
 try:
-    import pymysql as MySQLdb
+    import MySQLdb
 except ImportError:
-    print("ERROR !!!!\nPyMySQL not installed (pip install -r requirements.txt).")
-    sys.exit(1)
+    try:
+        import pymysql as MySQLdb
+    except ImportError:
+        print("ERROR !!!!\nInstall MySQLdb or PyMySQL (pip install -r requirements.txt).")
+        sys.exit(1)
 
 try:
     # Database connection
@@ -59,8 +65,8 @@ try:
                         user = Config.get("database", "username"),
                         passwd = Config.get("database", "password"),
                         db = Config.get("database", "database"),
-                        port = Config.getint("database", "port") if Config.has_option("database", "port") else 3306,
-                        autocommit = True)
+                        port = Config.getint("database", "port") if Config.has_option("database", "port") else 3306)
+    conn.autocommit(True)
     cursor = conn.cursor ()
     
     # Get the last date and count the amount of days to get

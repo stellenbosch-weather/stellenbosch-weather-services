@@ -32,7 +32,18 @@ only once; existing columns cause an error on repeat application.
 
 ## Running imports
 
-The HTML collectors require Python 3 and PyMySQL:
+The HTML collectors support Python 2.7 and Python 3. They run using `python`
+on PATH and prefer the existing MySQLdb driver, falling back to PyMySQL.
+On the Python 2.7 server with MySQLdb already installed, no new dependencies
+are needed:
+
+```sh
+./import-minutely.sh --records 58440
+./import-hourly.sh
+./import-daily.sh
+```
+
+For local Python 3 use, activate a virtual environment with PyMySQL:
 
 ```sh
 python3 -m venv /tmp/sonbesie-venv
