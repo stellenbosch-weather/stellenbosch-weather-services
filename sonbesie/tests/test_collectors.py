@@ -19,13 +19,22 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tmin_html import parse_tmin_html
 
 
+class Output(StringIO):
+    def __init__(self, terminal):
+        StringIO.__init__(self)
+        self.terminal = terminal
+
+    def isatty(self):
+        return self.terminal
+
+
 class CollectorCompatibilityTests(unittest.TestCase):
     def test_collectors_with_legacy_mysql_driver(self):
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         with open(os.path.join(root, 'tests', 'fixtures', 'tmin.html'), 'rb') as handle:
             fixture = handle.read()
         columns, rows = parse_tmin_html(fixture)
-        for script in ['TMinHTML.py', 'THourHTML.py', 'TDailyHTML.py', 'ThermocoupleHTML.py']:
+        for script, terminal in [(s, tty) for s in ['TMinHTML.py', 'THourHTML.py', 'TDailyHTML.py', 'ThermocoupleHTML.py'] for tty in (False, True)]:
             inserted = []
             autocommit = []
 
@@ -83,12 +92,20 @@ class CollectorCompatibilityTests(unittest.TestCase):
                 sys.modules['MySQLdb'] = mysql
                 sys.modules['settings_loader'] = settings
                 sys.argv = [script] + (['--records', '3'] if script == 'TMinHTML.py' else [])
-                sys.stdout = StringIO()
+                sys.stdout = Output(terminal)
                 urllib2.urlopen = lambda *args, **kwargs: type('Response', (object,), {
                     'read': lambda self: fixture, 'close': lambda self: None})()
                 target = os.path.join(directory, script)
                 shutil.copyfile(os.path.join(root, script), target)
                 runpy.run_path(target, run_name='__main__')
+                output = sys.stdout.getvalue()
+                if terminal:
+                    self.assertIn('Downloading http://', output)
+                    self.assertIn('Downloaded ', output)
+                    self.assertIn('processed 3/3 records; inserted 2, skipped 1', output)
+                    self.assertIn('complete;', output)
+                else:
+                    self.assertEqual(output, '', script)
                 self.assertEqual(autocommit, [True], script)
                 self.assertEqual(len(inserted), 2, script)
                 self.assertEqual(inserted[0][2:], rows[1], script)

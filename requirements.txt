@@ -1,2 +1,3 @@
 PyMySQL>=1.1.1,<2; python_version >= "3.0"
 PyMySQL==0.10.1; python_version < "3.0"
+pycampbellcr1000==0.4
